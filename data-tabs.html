@@ -1,126 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Semiconductor Suppliers Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 30px;
-      color: #333;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Supplier Dashboard with Inline Graphs & Sorting</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 40px 20px;
+    color: #222;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #004085;
+    font-weight: 700;
+  }
+  /* Sorting buttons */
+  .sort-controls {
+    max-width: 900px;
+    margin: 0 auto 30px;
+    text-align: center;
+  }
+  .sort-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    margin: 0 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .sort-btn:hover, .sort-btn.active {
+    background-color: #0056b3;
+  }
+
+  /* Table styles */
+  table {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto 50px;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  thead tr {
+    background-color: #007bff;
+    color: white;
+  }
+  th, td {
+    padding: 15px 22px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    position: relative;
+  }
+  td.supplier {
+    color: #007bff;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s;
+  }
+  td.supplier:hover {
+    color: #004085;
+    text-decoration: underline;
+  }
+  .check {
+    color: #28a745;
+    font-weight: 700;
+    font-size: 1.2em;
+  }
+  .cross {
+    color: #dc3545;
+    font-weight: 700;
+    font-size: 1.2em;
+  }
+
+  /* Graph container */
+  .graph-tooltip {
+    position: absolute;
+    top: -150px; /* Above the row */
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    background: #ffffffdd;
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    padding: 10px 20px;
+    pointer-events: auto;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    user-select: none;
+  }
+  .graph-tooltip.active {
+    opacity: 1;
+  }
+  .graph-chart {
+    width: 28%;
+    min-width: 150px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px 10px 15px;
+    box-shadow: inset 0 0 8px #007bff33;
+  }
+  .graph-chart h4 {
+    font-size: 14px;
+    margin: 0 0 8px;
+    text-align: center;
+    color: #004085;
+    font-weight: 700;
+  }
+
+  /* Responsive */
+  @media (max-width: 650px) {
+    .graph-tooltip {
+      flex-direction: column;
+      top: -480px;
+      gap: 25px;
+      padding: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
     }
-    h1, h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #004085;
-    }
-    table {
+    .graph-chart {
       width: 100%;
-      max-width: 900px;
-      margin: 20px auto 40px;
-      border-collapse: collapse;
-      background: white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      overflow: hidden;
+      min-width: unset;
     }
-    th, td {
-      padding: 14px 20px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-      user-select: none;
-    }
-    th {
-      background: #007bff;
-      color: white;
-      font-weight: 600;
-    }
-    td.supplier {
-      color: #007bff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: color 0.3s;
-    }
-    td.supplier:hover {
-      color: #0056b3;
-      text-decoration: underline;
-    }
-    td .check {
-      color: #28a745;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-    td .cross {
-      color: #dc3545;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-    .details-container {
-      max-width: 900px;
-      margin: 0 auto 60px;
-      background: white;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      padding: 25px 30px;
-      display: none;
-      animation: fadeIn 0.4s ease forwards;
-    }
-    .details-container.active {
-      display: block;
-    }
-    .charts {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-    .chart-box {
-      flex: 1 1 280px;
-      max-width: 280px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: inset 0 0 8px rgba(0,123,255,0.1);
-    }
-    .chart-box h3 {
-      text-align: center;
-      margin-bottom: 15px;
-      color: #004085;
-      font-weight: 700;
-    }
-    .news {
-      max-width: 800px;
-      margin: 0 auto;
-      color: #333;
-    }
-    .news h3 {
-      color: #004085;
-      margin-bottom: 15px;
-    }
-    .news ul {
-      list-style-type: disc;
-      padding-left: 20px;
-      line-height: 1.6;
-    }
-    .news li {
-      margin-bottom: 10px;
-    }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-  </style>
+  }
+
+</style>
 </head>
 <body>
 
   <h1>Semiconductor Suppliers Dashboard</h1>
 
-  <table>
+  <div class="sort-controls">
+    <button class="sort-btn active" data-key="cost">Sort by Cost (Low to High)</button>
+    <button class="sort-btn" data-key="sustainability">Sort by Sustainability</button>
+    <button class="sort-btn" data-key="speed">Sort by Speed (Fast to Slow)</button>
+  </div>
+
+  <table id="supplier-table">
     <thead>
       <tr>
         <th>Supplier</th>
@@ -129,181 +160,240 @@
         <th>Speed (Days)</th>
       </tr>
     </thead>
-    <tbody id="supplier-table-body">
-      <tr>
-        <td class="supplier" data-id="A">Advanced Materials</td>
-        <td>$2500</td>
-        <td><span class="check">ISO 14001, ESG</span></td>
-        <td>7</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="B">Silitronic</td>
-        <td>$1800</td>
-        <td><span class="check">ISO 9001</span></td>
-        <td>10</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="C">JP Microelectronics</td>
-        <td>$2200</td>
-        <td><span class="cross">None</span></td>
-        <td>5</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="D">NUMCO Corporation</td>
-        <td>$2000</td>
-        <td><span class="check">ESG</span></td>
-        <td>12</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="E">WorldWaFes</td>
-        <td>$2700</td>
-        <td><span class="check">ISO 14001, ISO 50001</span></td>
-        <td>8</td>
-      </tr>
+    <tbody>
+      <!-- Rows will be inserted dynamically -->
     </tbody>
   </table>
 
-  <div id="supplier-details" class="details-container">
-    <h2 id="details-title">Supplier Details</h2>
-    <div class="charts">
-      <div class="chart-box">
-        <h3>Company Profile (Cost / Sustainability / Speed)</h3>
-        <canvas id="profileChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h3>Performance Scores</h3>
-        <canvas id="performanceChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h3>Speed Trend (Days to Deliver)</h3>
-        <canvas id="trendChart"></canvas>
-      </div>
-    </div>
-    <div class="news">
-      <h3>Recent News</h3>
-      <ul id="news-list"></ul>
-    </div>
-  </div>
+  <!-- Tooltip graphs container (inserted dynamically) -->
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const supplierData = {
-    A: {
-      profile: {Cost: 2500, Sustainability: 70, Speed: 7},
-      performance: {Cost: 65, Sustainability: 85, Speed: 90},
-      trend: [8, 7, 7, 6, 7, 7],
+  // Datos inventados y coherentes
+  const suppliers = [
+    {
+      id: "A",
+      name: "Advanced Materials",
+      cost: 2500,
+      sustainability: 70, // score 0-100 (ISO, ESG)
+      sustainabilityLabels: ["ISO 14001", "ESG"],
+      speed: 7,
+      profileData: {Cost: 2500, Sustainability: 70, Speed: 7},
+      performanceScores: {Cost: 65, Sustainability: 85, Speed: 90},
+      speedTrend: [8,7,7,6,7,7],
       news: [
         "Advanced Materials certified with ISO 14001 and ESG standards.",
         "Advanced Materials shortens delivery time by 1 day.",
         "Advanced Materials launches new green manufacturing line."
       ]
     },
-    B: {
-      profile: {Cost: 1800, Sustainability: 60, Speed: 10},
-      performance: {Cost: 80, Sustainability: 70, Speed: 75},
-      trend: [11, 10, 10, 9, 10, 10],
+    {
+      id: "B",
+      name: "Silitronic",
+      cost: 1800,
+      sustainability: 60,
+      sustainabilityLabels: ["ISO 9001"],
+      speed: 10,
+      profileData: {Cost: 1800, Sustainability: 60, Speed: 10},
+      performanceScores: {Cost: 80, Sustainability: 70, Speed: 75},
+      speedTrend: [11,10,10,9,10,10],
       news: [
         "Silitronic maintains ISO 9001 certification.",
         "Silitronic expands production capacity.",
         "Silitronic invests in faster logistics."
       ]
     },
-    C: {
-      profile: {Cost: 2200, Sustainability: 20, Speed: 5},
-      performance: {Cost: 70, Sustainability: 25, Speed: 95},
-      trend: [6, 5, 5, 4, 5, 5],
+    {
+      id: "C",
+      name: "JP Microelectronics",
+      cost: 2200,
+      sustainability: 20,
+      sustainabilityLabels: [],
+      speed: 5,
+      profileData: {Cost: 2200, Sustainability: 20, Speed: 5},
+      performanceScores: {Cost: 70, Sustainability: 25, Speed: 95},
+      speedTrend: [6,5,5,4,5,5],
       news: [
         "JP Microelectronics focused on speed but lacks sustainability certifications.",
         "JP Microelectronics improves delivery times significantly.",
         "JP Microelectronics working on environmental compliance."
       ]
     },
-    D: {
-      profile: {Cost: 2000, Sustainability: 50, Speed: 12},
-      performance: {Cost: 75, Sustainability: 65, Speed: 60},
-      trend: [13, 12, 12, 12, 11, 12],
+    {
+      id: "D",
+      name: "NUMCO Corporation",
+      cost: 2000,
+      sustainability: 50,
+      sustainabilityLabels: ["ESG"],
+      speed: 12,
+      profileData: {Cost: 2000, Sustainability: 50, Speed: 12},
+      performanceScores: {Cost: 75, Sustainability: 65, Speed: 60},
+      speedTrend: [13,12,12,12,11,12],
       news: [
         "NUMCO Corporation adopts ESG frameworks.",
         "NUMCO Corporation faces slight delivery delays.",
         "NUMCO Corporation optimizing production costs."
       ]
     },
-    E: {
-      profile: {Cost: 2700, Sustainability: 80, Speed: 8},
-      performance: {Cost: 60, Sustainability: 90, Speed: 85},
-      trend: [9, 8, 8, 7, 8, 8],
+    {
+      id: "E",
+      name: "WorldWaFes",
+      cost: 2700,
+      sustainability: 80,
+      sustainabilityLabels: ["ISO 14001", "ISO 50001"],
+      speed: 8,
+      profileData: {Cost: 2700, Sustainability: 80, Speed: 8},
+      performanceScores: {Cost: 60, Sustainability: 90, Speed: 85},
+      speedTrend: [9,8,8,7,8,8],
       news: [
         "WorldWaFes certified with ISO 14001 and ISO 50001.",
         "WorldWaFes improves energy efficiency across plants.",
         "WorldWaFes shortens average delivery by 1 day."
       ]
     }
-  };
+  ];
 
-  let currentSupplier = null;
+  // Variables para manejar gráfico activo y timeout hover
+  let activeTooltip = null;
   let hoverTimeout = null;
 
-  const detailsDiv = document.getElementById('supplier-details');
-  const detailsTitle = document.getElementById('details-title');
-  const newsList = document.getElementById('news-list');
+  // Crear tabla dinámicamente
+  const tbody = document.querySelector("#supplier-table tbody");
+  function renderTableRows(data) {
+    tbody.innerHTML = "";
+    data.forEach(sup => {
+      const tr = document.createElement("tr");
+      tr.dataset.id = sup.id;
 
-  let profileChartInstance = null;
-  let performanceChartInstance = null;
-  let trendChartInstance = null;
+      tr.innerHTML = `
+        <td class="supplier" style="position: relative; user-select:none; cursor:pointer;">${sup.name}</td>
+        <td>$${sup.cost.toLocaleString()}</td>
+        <td>${sup.sustainabilityLabels.length > 0 ? sup.sustainabilityLabels.join(", ") : '<span style="color:#dc3545; font-weight:700;">None</span>'}</td>
+        <td>${sup.speed}</td>
+      `;
+      tbody.appendChild(tr);
 
-  function createProfileChart(data) {
-    const ctx = document.getElementById('profileChart').getContext('2d');
-    if(profileChartInstance) profileChartInstance.destroy();
-    profileChartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: Object.keys(data),
-        datasets: [{
-          data: Object.values(data),
-          backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-          hoverOffset: 30,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom' },
-          title: { display: false }
+      // Crear contenedor de graficas (tooltip) y anexarlo a la fila
+      const graphTooltip = document.createElement("div");
+      graphTooltip.className = "graph-tooltip";
+      graphTooltip.style.width = "100%";
+      graphTooltip.style.left = "0";
+      graphTooltip.style.top = "-160px"; // ajusta si quieres más espacio
+      graphTooltip.style.position = "absolute";
+      graphTooltip.style.pointerEvents = "auto";
+
+      graphTooltip.innerHTML = `
+        <div class="graph-chart"><h4>Cost Profile</h4><canvas id="costChart-${sup.id}"></canvas></div>
+        <div class="graph-chart"><h4>Sustainability Score</h4><canvas id="sustChart-${sup.id}"></canvas></div>
+        <div class="graph-chart"><h4>Speed Trend</h4><canvas id="speedChart-${sup.id}"></canvas></div>
+      `;
+
+      tr.style.position = "relative";
+      tr.appendChild(graphTooltip);
+
+      // Hover handlers para mostrar/ocultar tooltip
+      tr.querySelector(".supplier").addEventListener("mouseenter", () => {
+        clearTimeout(hoverTimeout);
+        if(activeTooltip && activeTooltip !== graphTooltip) {
+          activeTooltip.classList.remove("active");
         }
-      }
+        activeTooltip = graphTooltip;
+        activeTooltip.classList.add("active");
+      });
+
+      tr.querySelector(".supplier").addEventListener("mouseleave", () => {
+        hoverTimeout = setTimeout(() => {
+          if (!graphTooltip.matches(':hover')) {
+            graphTooltip.classList.remove("active");
+            activeTooltip = null;
+          }
+        }, 300);
+      });
+
+      graphTooltip.addEventListener("mouseenter", () => {
+        clearTimeout(hoverTimeout);
+        activeTooltip = graphTooltip;
+        activeTooltip.classList.add("active");
+      });
+
+      graphTooltip.addEventListener("mouseleave", () => {
+        hoverTimeout = setTimeout(() => {
+          graphTooltip.classList.remove("active");
+          activeTooltip = null;
+        }, 300);
+      });
+
+      // Crear gráficos con Chart.js
+      createCostChart(`costChart-${sup.id}`, sup.cost);
+      createSustainabilityChart(`sustChart-${sup.id}`, sup.sustainability);
+      createSpeedTrendChart(`speedChart-${sup.id}`, sup.speedTrend);
     });
   }
 
-  function createPerformanceChart(data) {
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    if(performanceChartInstance) performanceChartInstance.destroy();
-    performanceChartInstance = new Chart(ctx, {
+  // Gráfico de barras para Cost (un solo valor)
+  function createCostChart(canvasId, cost) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: Object.keys(data),
+        labels: ['Cost'],
         datasets: [{
-          label: 'Performance Score',
-          data: Object.values(data),
-          backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-          borderRadius: 5
+          label: 'Cost (USD)',
+          data: [cost],
+          backgroundColor: '#007bff',
+          borderRadius: 6,
+          maxBarThickness: 40,
         }]
       },
       options: {
         responsive: true,
+        animation: false,
         scales: {
-          y: { beginAtZero: true, max: 100 }
+          y: {beginAtZero: true, max: 4000, ticks: {stepSize: 500}},
+          x: {display: false}
         },
         plugins: {
-          legend: { display: false },
-          title: { display: false }
+          legend: {display: false},
+          tooltip: {enabled: true}
         }
       }
     });
   }
 
-  function createTrendChart(data) {
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    if(trendChartInstance) trendChartInstance.destroy();
-    trendChartInstance = new Chart(ctx, {
+  // Gráfico de pastel para Sustainability (score 0-100)
+  function createSustainabilityChart(canvasId, score) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Score', 'Remaining'],
+        datasets: [{
+          label: 'Sustainability',
+          data: [score, 100 - score],
+          backgroundColor: ['#28a745', '#e0e0e0'],
+          hoverOffset: 20,
+          cutout: '70%'
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: {display: false},
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.label}: ${ctx.parsed}%`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Gráfico de línea para Speed Trend (entrega en días)
+  function createSpeedTrendChart(canvasId, data) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -313,87 +403,52 @@
           fill: false,
           borderColor: '#17a2b8',
           tension: 0.3,
+          pointRadius: 3,
           pointBackgroundColor: '#17a2b8',
+          borderWidth: 2,
         }]
       },
       options: {
         responsive: true,
+        animation: false,
         plugins: {
-          legend: { position: 'top' },
-          title: { display: false }
+          legend: {display: false}
         },
         scales: {
-          y: { beginAtZero: true, max: 20 }
+          y: {beginAtZero: true, max: 20, ticks: {stepSize: 2}},
+          x: {grid: {display:false}}
         }
       }
     });
   }
 
-  function renderNews(newsArray) {
-    newsList.innerHTML = '';
-    newsArray.forEach(item => {
-      const li = document.createElement('li');
-      li.textContent = item;
-      newsList.appendChild(li);
-    });
-  }
-
-  function showSupplierDetails(supplierId) {
-    if(currentSupplier === supplierId) return; // already shown
-
-    currentSupplier = supplierId;
-    detailsTitle.textContent = `Supplier: ${getSupplierName(supplierId)} Details`;
-    const data = supplierData[supplierId];
-    createProfileChart(data.profile);
-    createPerformanceChart(data.performance);
-    createTrendChart(data.trend);
-    renderNews(data.news);
-
-    detailsDiv.classList.add('active');
-    detailsDiv.scrollIntoView({behavior: 'smooth'});
-  }
-
-  function hideSupplierDetails() {
-    currentSupplier = null;
-    detailsDiv.classList.remove('active');
-  }
-
-  function getSupplierName(id) {
-    const names = {
-      A: "Advanced Materials",
-      B: "Silitronic",
-      C: "JP Microelectronics",
-      D: "NUMCO Corporation",
-      E: "WorldWaFes"
-    };
-    return names[id] || id;
-  }
-
-  document.querySelectorAll('td.supplier').forEach(cell => {
-    cell.addEventListener('mouseenter', (e) => {
-      clearTimeout(hoverTimeout);
-      const id = e.target.getAttribute('data-id');
-      showSupplierDetails(id);
+  // Ordenar tabla según criterio y renderizar
+  function sortAndRender(key) {
+    // Desactivar botones y activar el seleccionado
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.key === key);
     });
 
-    cell.addEventListener('mouseleave', () => {
-      hoverTimeout = setTimeout(() => {
-        if (!detailsDiv.matches(':hover')) {
-          hideSupplierDetails();
-        }
-      }, 300);
+    let sorted = [...suppliers];
+    if(key === 'cost') {
+      sorted.sort((a,b) => a.cost - b.cost); // Ascendente menor costo mejor
+    } else if(key === 'sustainability') {
+      sorted.sort((a,b) => b.sustainability - a.sustainability); // Descendente mayor score
+    } else if(key === 'speed') {
+      sorted.sort((a,b) => a.speed - b.speed); // Ascendente menor días mejor
+    }
+    renderTableRows(sorted);
+  }
+
+  // Inicializar tabla y botones
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sortAndRender(btn.dataset.key);
     });
   });
 
-  detailsDiv.addEventListener('mouseenter', () => {
-    clearTimeout(hoverTimeout);
-  });
-
-  detailsDiv.addEventListener('mouseleave', () => {
-    hoverTimeout = setTimeout(() => {
-      hideSupplierDetails();
-    }, 300);
-  });
+  // Render inicial
+  sortAndRender('cost');
 
 </script>
 
