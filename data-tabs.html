@@ -1,118 +1,401 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Data Tabs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Semiconductor Suppliers Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 30px;
+      color: #333;
     }
-
-    h1 {
+    h1, h2 {
       text-align: center;
-    }
-
-    .tabs {
-      display: flex;
-      justify-content: center;
       margin-bottom: 20px;
+      color: #004085;
     }
-
-    .tab-button {
-      padding: 10px 20px;
-      margin: 0 10px;
-      background-color: #e0e0e0;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .tab-button.active {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .table-container {
-      display: none;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .table-container.active {
-      display: block;
-    }
-
     table {
       width: 100%;
+      max-width: 900px;
+      margin: 20px auto 40px;
       border-collapse: collapse;
       background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
     }
-
     th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
+      padding: 14px 20px;
+      border-bottom: 1px solid #ddd;
       text-align: center;
+      user-select: none;
     }
-
     th {
-      background-color: #f0f0f0;
+      background: #007bff;
+      color: white;
+      font-weight: 600;
+    }
+    td.supplier {
+      color: #007bff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    td.supplier:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+    td .check {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    td .cross {
+      color: #dc3545;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .details-container {
+      max-width: 900px;
+      margin: 0 auto 60px;
+      background: white;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 25px 30px;
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+    .details-container.active {
+      display: block;
+    }
+    .charts {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+    .chart-box {
+      flex: 1 1 280px;
+      max-width: 280px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: inset 0 0 8px rgba(0,123,255,0.1);
+    }
+    .chart-box h3 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #004085;
+      font-weight: 700;
+    }
+    .news {
+      max-width: 800px;
+      margin: 0 auto;
+      color: #333;
+    }
+    .news h3 {
+      color: #004085;
+      margin-bottom: 15px;
+    }
+    .news ul {
+      list-style-type: disc;
+      padding-left: 20px;
+      line-height: 1.6;
+    }
+    .news li {
+      margin-bottom: 10px;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
     }
   </style>
 </head>
 <body>
-  <h1>Interactive Data Tabs</h1>
 
-  <div class="tabs">
-    <button class="tab-button active" onclick="showTab('sustainability')">Sustainability</button>
-    <button class="tab-button" onclick="showTab('speed')">Speed</button>
-    <button class="tab-button" onclick="showTab('cost')">Cost</button>
+  <h1>Semiconductor Suppliers Dashboard</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Supplier</th>
+        <th>Cost (USD)</th>
+        <th>Sustainability</th>
+        <th>Speed (Days)</th>
+      </tr>
+    </thead>
+    <tbody id="supplier-table-body">
+      <tr>
+        <td class="supplier" data-id="A">Advanced Materials</td>
+        <td>$2500</td>
+        <td><span class="check">ISO 14001, ESG</span></td>
+        <td>7</td>
+      </tr>
+      <tr>
+        <td class="supplier" data-id="B">Silitronic</td>
+        <td>$1800</td>
+        <td><span class="check">ISO 9001</span></td>
+        <td>10</td>
+      </tr>
+      <tr>
+        <td class="supplier" data-id="C">JP Microelectronics</td>
+        <td>$2200</td>
+        <td><span class="cross">None</span></td>
+        <td>5</td>
+      </tr>
+      <tr>
+        <td class="supplier" data-id="D">NUMCO Corporation</td>
+        <td>$2000</td>
+        <td><span class="check">ESG</span></td>
+        <td>12</td>
+      </tr>
+      <tr>
+        <td class="supplier" data-id="E">WorldWaFes</td>
+        <td>$2700</td>
+        <td><span class="check">ISO 14001, ISO 50001</span></td>
+        <td>8</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div id="supplier-details" class="details-container">
+    <h2 id="details-title">Supplier Details</h2>
+    <div class="charts">
+      <div class="chart-box">
+        <h3>Company Profile (Cost / Sustainability / Speed)</h3>
+        <canvas id="profileChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Performance Scores</h3>
+        <canvas id="performanceChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Speed Trend (Days to Deliver)</h3>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+    <div class="news">
+      <h3>Recent News</h3>
+      <ul id="news-list"></ul>
+    </div>
   </div>
 
-  <div id="sustainability" class="table-container active">
-    <table>
-      <tr><th>Product</th><th>CO₂ Emissions</th><th>Score</th></tr>
-      <tr><td>Item A</td><td>10kg</td><td>A+</td></tr>
-      <tr><td>Item B</td><td>20kg</td><td>B</td></tr>
-    </table>
-  </div>
-
-  <div id="speed" class="table-container">
-    <table>
-      <tr><th>Product</th><th>Delivery Time</th><th>Speed Rating</th></tr>
-      <tr><td>Item A</td><td>2 Days</td><td>Fast</td></tr>
-      <tr><td>Item B</td><td>5 Days</td><td>Medium</td></tr>
-    </table>
-  </div>
-
-  <div id="cost" class="table-container">
-    <table>
-      <tr><th>Product</th><th>Price</th><th>Affordability</th></tr>
-      <tr><td>Item A</td><td>$100</td><td>High</td></tr>
-      <tr><td>Item B</td><td>$40</td><td>Low</td></tr>
-    </table>
-  </div>
-
-  <script>
-    function showTab(tabId) {
-      const tabs = document.querySelectorAll(".table-container");
-      const buttons = document.querySelectorAll(".tab-button");
-
-      tabs.forEach((tab) => {
-        tab.classList.remove("active");
-      });
-
-      buttons.forEach((btn) => {
-        btn.classList.remove("active");
-      });
-
-      document.getElementById(tabId).classList.add("active");
-      event.target.classList.add("active");
+<script>
+  const supplierData = {
+    A: {
+      profile: {Cost: 2500, Sustainability: 70, Speed: 7},
+      performance: {Cost: 65, Sustainability: 85, Speed: 90},
+      trend: [8, 7, 7, 6, 7, 7],
+      news: [
+        "Advanced Materials certified with ISO 14001 and ESG standards.",
+        "Advanced Materials shortens delivery time by 1 day.",
+        "Advanced Materials launches new green manufacturing line."
+      ]
+    },
+    B: {
+      profile: {Cost: 1800, Sustainability: 60, Speed: 10},
+      performance: {Cost: 80, Sustainability: 70, Speed: 75},
+      trend: [11, 10, 10, 9, 10, 10],
+      news: [
+        "Silitronic maintains ISO 9001 certification.",
+        "Silitronic expands production capacity.",
+        "Silitronic invests in faster logistics."
+      ]
+    },
+    C: {
+      profile: {Cost: 2200, Sustainability: 20, Speed: 5},
+      performance: {Cost: 70, Sustainability: 25, Speed: 95},
+      trend: [6, 5, 5, 4, 5, 5],
+      news: [
+        "JP Microelectronics focused on speed but lacks sustainability certifications.",
+        "JP Microelectronics improves delivery times significantly.",
+        "JP Microelectronics working on environmental compliance."
+      ]
+    },
+    D: {
+      profile: {Cost: 2000, Sustainability: 50, Speed: 12},
+      performance: {Cost: 75, Sustainability: 65, Speed: 60},
+      trend: [13, 12, 12, 12, 11, 12],
+      news: [
+        "NUMCO Corporation adopts ESG frameworks.",
+        "NUMCO Corporation faces slight delivery delays.",
+        "NUMCO Corporation optimizing production costs."
+      ]
+    },
+    E: {
+      profile: {Cost: 2700, Sustainability: 80, Speed: 8},
+      performance: {Cost: 60, Sustainability: 90, Speed: 85},
+      trend: [9, 8, 8, 7, 8, 8],
+      news: [
+        "WorldWaFes certified with ISO 14001 and ISO 50001.",
+        "WorldWaFes improves energy efficiency across plants.",
+        "WorldWaFes shortens average delivery by 1 day."
+      ]
     }
-  </script>
+  };
+
+  let currentSupplier = null;
+  let hoverTimeout = null;
+
+  const detailsDiv = document.getElementById('supplier-details');
+  const detailsTitle = document.getElementById('details-title');
+  const newsList = document.getElementById('news-list');
+
+  let profileChartInstance = null;
+  let performanceChartInstance = null;
+  let trendChartInstance = null;
+
+  function createProfileChart(data) {
+    const ctx = document.getElementById('profileChart').getContext('2d');
+    if(profileChartInstance) profileChartInstance.destroy();
+    profileChartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(data),
+        datasets: [{
+          data: Object.values(data),
+          backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+          hoverOffset: 30,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: false }
+        }
+      }
+    });
+  }
+
+  function createPerformanceChart(data) {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    if(performanceChartInstance) performanceChartInstance.destroy();
+    performanceChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(data),
+        datasets: [{
+          label: 'Performance Score',
+          data: Object.values(data),
+          backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        },
+        plugins: {
+          legend: { display: false },
+          title: { display: false }
+        }
+      }
+    });
+  }
+
+  function createTrendChart(data) {
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    if(trendChartInstance) trendChartInstance.destroy();
+    trendChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Delivery Days',
+          data: data,
+          fill: false,
+          borderColor: '#17a2b8',
+          tension: 0.3,
+          pointBackgroundColor: '#17a2b8',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 20 }
+        }
+      }
+    });
+  }
+
+  function renderNews(newsArray) {
+    newsList.innerHTML = '';
+    newsArray.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      newsList.appendChild(li);
+    });
+  }
+
+  function showSupplierDetails(supplierId) {
+    if(currentSupplier === supplierId) return; // already shown
+
+    currentSupplier = supplierId;
+    detailsTitle.textContent = `Supplier: ${getSupplierName(supplierId)} Details`;
+    const data = supplierData[supplierId];
+    createProfileChart(data.profile);
+    createPerformanceChart(data.performance);
+    createTrendChart(data.trend);
+    renderNews(data.news);
+
+    detailsDiv.classList.add('active');
+    detailsDiv.scrollIntoView({behavior: 'smooth'});
+  }
+
+  function hideSupplierDetails() {
+    currentSupplier = null;
+    detailsDiv.classList.remove('active');
+  }
+
+  function getSupplierName(id) {
+    const names = {
+      A: "Advanced Materials",
+      B: "Silitronic",
+      C: "JP Microelectronics",
+      D: "NUMCO Corporation",
+      E: "WorldWaFes"
+    };
+    return names[id] || id;
+  }
+
+  document.querySelectorAll('td.supplier').forEach(cell => {
+    cell.addEventListener('mouseenter', (e) => {
+      clearTimeout(hoverTimeout);
+      const id = e.target.getAttribute('data-id');
+      showSupplierDetails(id);
+    });
+
+    cell.addEventListener('mouseleave', () => {
+      hoverTimeout = setTimeout(() => {
+        if (!detailsDiv.matches(':hover')) {
+          hideSupplierDetails();
+        }
+      }, 300);
+    });
+  });
+
+  detailsDiv.addEventListener('mouseenter', () => {
+    clearTimeout(hoverTimeout);
+  });
+
+  detailsDiv.addEventListener('mouseleave', () => {
+    hoverTimeout = setTimeout(() => {
+      hideSupplierDetails();
+    }, 300);
+  });
+
+</script>
+
 </body>
 </html>
