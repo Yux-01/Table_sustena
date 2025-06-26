@@ -18,6 +18,28 @@
       margin-bottom: 20px;
       color: #004085;
     }
+    /* Botones para rankear */
+    .sort-controls {
+      max-width: 900px;
+      margin: 0 auto 20px;
+      text-align: center;
+    }
+    .sort-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      margin: 0 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      user-select: none;
+    }
+    .sort-btn:hover, .sort-btn.active {
+      background-color: #0056b3;
+    }
+
     table {
       width: 100%;
       max-width: 900px;
@@ -86,6 +108,10 @@
       border-radius: 10px;
       padding: 15px;
       box-shadow: inset 0 0 8px rgba(0,123,255,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .chart-box:hover {
+      box-shadow: inset 0 0 15px rgba(0,123,255,0.4);
     }
     .chart-box h3 {
       text-align: center;
@@ -106,9 +132,27 @@
       list-style-type: disc;
       padding-left: 20px;
       line-height: 1.6;
+      max-height: 140px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      background: #fefefe;
     }
     .news li {
       margin-bottom: 10px;
+    }
+    .news li.good {
+      color: #155724;
+      background: #d4edda;
+      padding: 6px 10px;
+      border-radius: 5px;
+    }
+    .news li.bad {
+      color: #721c24;
+      background: #f8d7da;
+      padding: 6px 10px;
+      border-radius: 5px;
     }
     @keyframes fadeIn {
       from {opacity: 0; transform: translateY(10px);}
@@ -120,6 +164,12 @@
 
   <h1>Semiconductor Suppliers Dashboard</h1>
 
+  <div class="sort-controls">
+    <button class="sort-btn active" data-key="cost">Sort by Cost (Low to High)</button>
+    <button class="sort-btn" data-key="sustainability">Sort by Sustainability</button>
+    <button class="sort-btn" data-key="speed">Sort by Speed (Fast to Slow)</button>
+  </div>
+
   <table>
     <thead>
       <tr>
@@ -130,40 +180,11 @@
       </tr>
     </thead>
     <tbody id="supplier-table-body">
-      <tr>
-        <td class="supplier" data-id="A">Advanced Materials</td>
-        <td>$2500</td>
-        <td><span class="check">ISO 14001, ESG</span></td>
-        <td>7</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="B">SilitroMic</td>
-        <td>$1800</td>
-        <td><span class="check">ISO 9001</span></td>
-        <td>10</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="C">Micro-IP Inc</td>
-        <td>$2200</td>
-        <td><span class="cross">None</span></td>
-        <td>5</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="D">Numio Corporation</td>
-        <td>$2000</td>
-        <td><span class="check">ESG</span></td>
-        <td>12</td>
-      </tr>
-      <tr>
-        <td class="supplier" data-id="E">WorldWates</td>
-        <td>$2700</td>
-        <td><span class="check">ISO 14001, ISO 50001</span></td>
-        <td>8</td>
-      </tr>
+      <!-- Filas se crean dinámicamente -->
     </tbody>
   </table>
 
-  <div id="supplier-details" class="details-container">
+  <div id="supplier-details" class="details-container" aria-live="polite" aria-atomic="true">
     <h2 id="details-title">Supplier Details</h2>
     <div class="charts">
       <div class="chart-box">
@@ -186,16 +207,16 @@
   </div>
 
 <script>
-  // Datos con valores coherentes para cada proveedor
+  // Datos con valores coherentes para cada proveedor + good/bad news flags
   const supplierData = {
     A: {
       profile: {Cost: 2500, Sustainability: 70, Speed: 7},
       performance: {Cost: 65, Sustainability: 85, Speed: 90},
       trend: [8, 7, 7, 6, 7, 7],
       news: [
-        "Advanced Materials certified with ISO 14001 and ESG standards.",
-        "Advanced Materials shortens delivery time by 1 day.",
-        "Advanced Materials launches new green manufacturing line."
+        {text: "Advanced Materials certified with ISO 14001 and ESG standards.", good: true},
+        {text: "Advanced Materials shortens delivery time by 1 day.", good: true},
+        {text: "Advanced Materials launches new green manufacturing line.", good: true}
       ]
     },
     B: {
@@ -203,9 +224,9 @@
       performance: {Cost: 80, Sustainability: 70, Speed: 75},
       trend: [11, 10, 10, 9, 10, 10],
       news: [
-        "SilitroMic maintains ISO 9001 certification.",
-        "SilitroMic expands production capacity.",
-        "SilitroMic invests in faster logistics."
+        {text: "SilitroMic maintains ISO 9001 certification.", good: true},
+        {text: "SilitroMic expands production capacity.", good: true},
+        {text: "SilitroMic invests in faster logistics.", good: true}
       ]
     },
     C: {
@@ -213,9 +234,9 @@
       performance: {Cost: 70, Sustainability: 25, Speed: 95},
       trend: [6, 5, 5, 4, 5, 5],
       news: [
-        "Micro-IP Inc focused on speed but lacks sustainability certifications.",
-        "Micro-IP Inc improves delivery times significantly.",
-        "Micro-IP Inc working on environmental compliance."
+        {text: "Micro-IP Inc focused on speed but lacks sustainability certifications.", good: false},
+        {text: "Micro-IP Inc improves delivery times significantly.", good: true},
+        {text: "Micro-IP Inc working on environmental compliance.", good: false}
       ]
     },
     D: {
@@ -223,9 +244,9 @@
       performance: {Cost: 75, Sustainability: 65, Speed: 60},
       trend: [13, 12, 12, 12, 11, 12],
       news: [
-        "Numio Corporation adopts ESG frameworks.",
-        "Numio Corporation faces slight delivery delays.",
-        "Numio Corporation optimizing production costs."
+        {text: "Numio Corporation adopts ESG frameworks.", good: true},
+        {text: "Numio Corporation faces slight delivery delays.", good: false},
+        {text: "Numio Corporation optimizing production costs.", good: true}
       ]
     },
     E: {
@@ -233,19 +254,91 @@
       performance: {Cost: 60, Sustainability: 90, Speed: 85},
       trend: [9, 8, 8, 7, 8, 8],
       news: [
-        "WorldWates certified with ISO 14001 and ISO 50001.",
-        "WorldWates improves energy efficiency across plants.",
-        "WorldWates shortens average delivery by 1 day."
+        {text: "WorldWates certified with ISO 14001 and ISO 50001.", good: true},
+        {text: "WorldWates improves energy efficiency across plants.", good: true},
+        {text: "WorldWates shortens average delivery by 1 day.", good: true}
       ]
     }
   };
 
+  const supplierNames = {
+    A: "Advanced Materials",
+    B: "SilitroMic",
+    C: "Micro-IP Inc",
+    D: "Numio Corporation",
+    E: "WorldWates"
+  };
+
+  // Estado actual
   let currentSupplier = null;
+  let currentSortKey = 'cost';
 
   const detailsDiv = document.getElementById('supplier-details');
   const detailsTitle = document.getElementById('details-title');
   const newsList = document.getElementById('news-list');
+  const tableBody = document.getElementById('supplier-table-body');
+  const sortButtons = document.querySelectorAll('.sort-btn');
 
+  // Crear tablas
+  function renderTable() {
+    // Ordenar según currentSortKey
+    const sortedKeys = Object.keys(supplierData).sort((a,b) => {
+      if(currentSortKey === 'cost') {
+        return supplierData[a].profile.Cost - supplierData[b].profile.Cost;
+      } else if(currentSortKey === 'sustainability') {
+        // ordenar descendente para sustainability (más alto mejor)
+        return supplierData[b].profile.Sustainability - supplierData[a].profile.Sustainability;
+      } else if(currentSortKey === 'speed') {
+        // menor días es mejor, ascendente
+        return supplierData[a].profile.Speed - supplierData[b].profile.Speed;
+      }
+      return 0;
+    });
+
+    tableBody.innerHTML = '';
+    sortedKeys.forEach(id => {
+      const data = supplierData[id];
+      const row = document.createElement('tr');
+
+      const tdSupplier = document.createElement('td');
+      tdSupplier.classList.add('supplier');
+      tdSupplier.setAttribute('data-id', id);
+      tdSupplier.textContent = supplierNames[id];
+      row.appendChild(tdSupplier);
+
+      const tdCost = document.createElement('td');
+      tdCost.textContent = `$${data.profile.Cost}`;
+      row.appendChild(tdCost);
+
+      const tdSustain = document.createElement('td');
+      const spanSust = document.createElement('span');
+      if(data.profile.Sustainability > 40) {
+        spanSust.textContent = 'ISO & ESG';
+        spanSust.classList.add('check');
+      } else {
+        spanSust.textContent = 'None';
+        spanSust.classList.add('cross');
+      }
+      tdSustain.appendChild(spanSust);
+      row.appendChild(tdSustain);
+
+      const tdSpeed = document.createElement('td');
+      tdSpeed.textContent = data.profile.Speed;
+      row.appendChild(tdSpeed);
+
+      tableBody.appendChild(row);
+    });
+
+    // Re-agregar event listeners para click en suppliers
+    document.querySelectorAll('td.supplier').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const id = cell.getAttribute('data-id');
+        toggleSupplierDetails(id);
+      });
+    });
+  }
+
+  // Crear gráficos
   let profileChartInstance = null;
   let performanceChartInstance = null;
   let trendChartInstance = null;
@@ -261,13 +354,15 @@
           data: Object.values(data),
           backgroundColor: ['#007bff', '#28a745', '#ffc107'],
           hoverOffset: 30,
+          borderWidth: 1,
+          borderColor: '#ddd'
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'bottom' },
-          title: { display: false }
+          legend: { position: 'bottom', labels: { font: { size: 14 }} },
+          tooltip: { enabled: true }
         }
       }
     });
@@ -284,7 +379,8 @@
           label: 'Performance Score',
           data: Object.values(data),
           backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-          borderRadius: 5
+          borderRadius: 6,
+          borderSkipped: false
         }]
       },
       options: {
@@ -294,7 +390,7 @@
         },
         plugins: {
           legend: { display: false },
-          title: { display: false }
+          tooltip: { enabled: true }
         }
       }
     });
@@ -314,13 +410,16 @@
           borderColor: '#17a2b8',
           tension: 0.3,
           pointBackgroundColor: '#17a2b8',
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          borderWidth: 3
         }]
       },
       options: {
         responsive: true,
         plugins: {
           legend: { position: 'top' },
-          title: { display: false }
+          tooltip: { enabled: true }
         },
         scales: {
           y: { beginAtZero: true, max: 20 }
@@ -329,23 +428,25 @@
     });
   }
 
+  // Render noticias con colores segun tipo (good/bad)
   function renderNews(newsArray) {
     newsList.innerHTML = '';
     newsArray.forEach(item => {
       const li = document.createElement('li');
-      li.textContent = item;
+      li.textContent = item.text;
+      li.classList.add(item.good ? 'good' : 'bad');
       newsList.appendChild(li);
     });
   }
 
+  // Mostrar/ocultar detalles proveedor
   function toggleSupplierDetails(supplierId) {
     if(currentSupplier === supplierId) {
-      // Hide details if same supplier clicked again
       detailsDiv.classList.remove('active');
       currentSupplier = null;
     } else {
       currentSupplier = supplierId;
-      detailsTitle.textContent = `Supplier: ${getSupplierName(supplierId)} Details`;
+      detailsTitle.textContent = `Supplier: ${supplierNames[supplierId]} Details`;
       const data = supplierData[supplierId];
       createProfileChart(data.profile);
       createPerformanceChart(data.performance);
@@ -356,23 +457,22 @@
     }
   }
 
-  function getSupplierName(id) {
-    const names = {
-      A: "Advanced Materials",
-      B: "Silitronic",
-      C: "JP Microelectronics",
-      D: "NUMCO Corporation",
-      E: "WorldWaFes"
-    };
-    return names[id] || id;
-  }
-
-  document.querySelectorAll('td.supplier').forEach(cell => {
-    cell.addEventListener('click', () => {
-      const id = cell.getAttribute('data-id');
-      toggleSupplierDetails(id);
+  // Botones ordenar
+  sortButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sortButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSortKey = btn.getAttribute('data-key');
+      renderTable();
+      // Ocultar detalles al ordenar
+      detailsDiv.classList.remove('active');
+      currentSupplier = null;
     });
   });
+
+  // Render inicial
+  renderTable();
+
 </script>
 
 </body>
