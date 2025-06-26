@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Supplier Dashboard with Inline Graphs & Sorting</title>
+<title>Supplier Dashboard with Inline Graphs & Rolling News</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {
@@ -44,7 +44,7 @@
   table {
     width: 100%;
     max-width: 900px;
-    margin: 0 auto 50px;
+    margin: 0 auto 60px;
     border-collapse: collapse;
     background: white;
     box-shadow: 0 6px 15px rgba(0,0,0,0.1);
@@ -87,7 +87,7 @@
   /* Graph container */
   .graph-tooltip {
     position: absolute;
-    top: -150px; /* Above the row */
+    top: -210px; /* más espacio para noticias */
     left: 0;
     width: 100%;
     display: flex;
@@ -96,12 +96,13 @@
     backdrop-filter: blur(6px);
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    padding: 10px 20px;
+    padding: 10px 20px 20px 20px;
     pointer-events: auto;
     z-index: 10;
     opacity: 0;
     transition: opacity 0.3s ease;
     user-select: none;
+    flex-wrap: nowrap;
   }
   .graph-tooltip.active {
     opacity: 1;
@@ -113,6 +114,9 @@
     border-radius: 10px;
     padding: 12px 10px 15px;
     box-shadow: inset 0 0 8px #007bff33;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .graph-chart h4 {
     font-size: 14px;
@@ -122,11 +126,48 @@
     font-weight: 700;
   }
 
+  /* News ticker container */
+  .news-ticker {
+    flex-basis: 100%;
+    margin-top: 15px;
+    height: 40px;
+    overflow: hidden;
+    position: relative;
+    background: #e9f7ef;
+    border-radius: 10px;
+    box-shadow: inset 0 0 8px #28a745aa;
+    color: #155724;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    user-select: none;
+  }
+  .news-ticker.bad-news {
+    background: #f8d7da;
+    box-shadow: inset 0 0 8px #dc3545aa;
+    color: #721c24;
+  }
+  .news-items {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scrollLeft 15s linear infinite;
+  }
+  .news-item {
+    display: inline-block;
+    margin-right: 45px;
+  }
+
+  @keyframes scrollLeft {
+    0% { transform: translateX(100%) }
+    100% { transform: translateX(-100%) }
+  }
+
   /* Responsive */
   @media (max-width: 650px) {
     .graph-tooltip {
       flex-direction: column;
-      top: -480px;
+      top: -430px;
       gap: 25px;
       padding: 20px;
       left: 50%;
@@ -137,8 +178,21 @@
       width: 100%;
       min-width: unset;
     }
+    .news-ticker {
+      height: auto;
+      white-space: normal;
+      animation: none;
+      padding: 15px;
+    }
+    .news-items {
+      animation: none;
+      display: block;
+    }
+    .news-item {
+      margin: 0 0 10px 0;
+      display: block;
+    }
   }
-
 </style>
 </head>
 <body>
@@ -161,30 +215,27 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Rows will be inserted dynamically -->
+      <!-- Rows se insertan con JS -->
     </tbody>
   </table>
 
-  <!-- Tooltip graphs container (inserted dynamically) -->
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Datos inventados y coherentes
   const suppliers = [
     {
       id: "A",
       name: "Advanced Materials",
       cost: 2500,
-      sustainability: 70, // score 0-100 (ISO, ESG)
+      sustainability: 70,
       sustainabilityLabels: ["ISO 14001", "ESG"],
       speed: 7,
       profileData: {Cost: 2500, Sustainability: 70, Speed: 7},
       performanceScores: {Cost: 65, Sustainability: 85, Speed: 90},
       speedTrend: [8,7,7,6,7,7],
       news: [
-        "Advanced Materials certified with ISO 14001 and ESG standards.",
-        "Advanced Materials shortens delivery time by 1 day.",
-        "Advanced Materials launches new green manufacturing line."
+        { text: "Advanced Materials certified with ISO 14001 and ESG standards.", good: true },
+        { text: "Advanced Materials shortens delivery time by 1 day.", good: true },
+        { text: "Advanced Materials launches new green manufacturing line.", good: true }
       ]
     },
     {
@@ -198,9 +249,9 @@
       performanceScores: {Cost: 80, Sustainability: 70, Speed: 75},
       speedTrend: [11,10,10,9,10,10],
       news: [
-        "Silitronic maintains ISO 9001 certification.",
-        "Silitronic expands production capacity.",
-        "Silitronic invests in faster logistics."
+        { text: "Silitronic maintains ISO 9001 certification.", good: true },
+        { text: "Silitronic expands production capacity.", good: true },
+        { text: "Silitronic invests in faster logistics.", good: true }
       ]
     },
     {
@@ -214,9 +265,9 @@
       performanceScores: {Cost: 70, Sustainability: 25, Speed: 95},
       speedTrend: [6,5,5,4,5,5],
       news: [
-        "JP Microelectronics focused on speed but lacks sustainability certifications.",
-        "JP Microelectronics improves delivery times significantly.",
-        "JP Microelectronics working on environmental compliance."
+        { text: "JP Microelectronics focused on speed but lacks sustainability certifications.", good: false },
+        { text: "JP Microelectronics improves delivery times significantly.", good: true },
+        { text: "JP Microelectronics working on environmental compliance.", good: false }
       ]
     },
     {
@@ -230,9 +281,9 @@
       performanceScores: {Cost: 75, Sustainability: 65, Speed: 60},
       speedTrend: [13,12,12,12,11,12],
       news: [
-        "NUMCO Corporation adopts ESG frameworks.",
-        "NUMCO Corporation faces slight delivery delays.",
-        "NUMCO Corporation optimizing production costs."
+        { text: "NUMCO Corporation adopts ESG frameworks.", good: true },
+        { text: "NUMCO Corporation faces slight delivery delays.", good: false },
+        { text: "NUMCO Corporation optimizing production costs.", good: true }
       ]
     },
     {
@@ -246,19 +297,18 @@
       performanceScores: {Cost: 60, Sustainability: 90, Speed: 85},
       speedTrend: [9,8,8,7,8,8],
       news: [
-        "WorldWaFes certified with ISO 14001 and ISO 50001.",
-        "WorldWaFes improves energy efficiency across plants.",
-        "WorldWaFes shortens average delivery by 1 day."
+        { text: "WorldWaFes certified with ISO 14001 and ISO 50001.", good: true },
+        { text: "WorldWaFes improves energy efficiency across plants.", good: true },
+        { text: "WorldWaFes shortens average delivery by 1 day.", good: true }
       ]
     }
   ];
 
-  // Variables para manejar gráfico activo y timeout hover
   let activeTooltip = null;
   let hoverTimeout = null;
 
-  // Crear tabla dinámicamente
   const tbody = document.querySelector("#supplier-table tbody");
+
   function renderTableRows(data) {
     tbody.innerHTML = "";
     data.forEach(sup => {
@@ -273,12 +323,13 @@
       `;
       tbody.appendChild(tr);
 
-      // Crear contenedor de graficas (tooltip) y anexarlo a la fila
+      // Crear contenedor gráfico (tooltip) y anexarlo solo a la celda supplier (no a toda la fila)
+      const supplierCell = tr.querySelector("td.supplier");
       const graphTooltip = document.createElement("div");
       graphTooltip.className = "graph-tooltip";
       graphTooltip.style.width = "100%";
       graphTooltip.style.left = "0";
-      graphTooltip.style.top = "-160px"; // ajusta si quieres más espacio
+      graphTooltip.style.top = "-210px";
       graphTooltip.style.position = "absolute";
       graphTooltip.style.pointerEvents = "auto";
 
@@ -286,13 +337,14 @@
         <div class="graph-chart"><h4>Cost Profile</h4><canvas id="costChart-${sup.id}"></canvas></div>
         <div class="graph-chart"><h4>Sustainability Score</h4><canvas id="sustChart-${sup.id}"></canvas></div>
         <div class="graph-chart"><h4>Speed Trend</h4><canvas id="speedChart-${sup.id}"></canvas></div>
+        <div class="news-ticker" id="newsTicker-${sup.id}"></div>
       `;
 
-      tr.style.position = "relative";
-      tr.appendChild(graphTooltip);
+      supplierCell.style.position = "relative";
+      supplierCell.appendChild(graphTooltip);
 
-      // Hover handlers para mostrar/ocultar tooltip
-      tr.querySelector(".supplier").addEventListener("mouseenter", () => {
+      // Hover handlers solo en el nombre del supplier
+      supplierCell.addEventListener("mouseenter", () => {
         clearTimeout(hoverTimeout);
         if(activeTooltip && activeTooltip !== graphTooltip) {
           activeTooltip.classList.remove("active");
@@ -301,7 +353,7 @@
         activeTooltip.classList.add("active");
       });
 
-      tr.querySelector(".supplier").addEventListener("mouseleave", () => {
+      supplierCell.addEventListener("mouseleave", () => {
         hoverTimeout = setTimeout(() => {
           if (!graphTooltip.matches(':hover')) {
             graphTooltip.classList.remove("active");
@@ -323,14 +375,16 @@
         }, 300);
       });
 
-      // Crear gráficos con Chart.js
+      // Crear gráficos
       createCostChart(`costChart-${sup.id}`, sup.cost);
       createSustainabilityChart(`sustChart-${sup.id}`, sup.sustainability);
       createSpeedTrendChart(`speedChart-${sup.id}`, sup.speedTrend);
+
+      // Render noticias
+      renderNewsTicker(`newsTicker-${sup.id}`, sup.news);
     });
   }
 
-  // Gráfico de barras para Cost (un solo valor)
   function createCostChart(canvasId, cost) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     return new Chart(ctx, {
@@ -360,7 +414,6 @@
     });
   }
 
-  // Gráfico de pastel para Sustainability (score 0-100)
   function createSustainabilityChart(canvasId, score) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     return new Chart(ctx, {
@@ -390,7 +443,6 @@
     });
   }
 
-  // Gráfico de línea para Speed Trend (entrega en días)
   function createSpeedTrendChart(canvasId, data) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     return new Chart(ctx, {
@@ -422,20 +474,45 @@
     });
   }
 
-  // Ordenar tabla según criterio y renderizar
+  function renderNewsTicker(tickerId, newsItems) {
+    const ticker = document.getElementById(tickerId);
+    ticker.innerHTML = '';
+    if (!newsItems || newsItems.length === 0) return;
+
+    // Crear contenedor para scroll
+    const newsContainer = document.createElement('div');
+    newsContainer.className = 'news-items';
+
+    newsItems.forEach(item => {
+      const newsEl = document.createElement('span');
+      newsEl.className = 'news-item';
+      newsEl.textContent = item.text;
+
+      // Color según si es buena noticia o mala (true/false)
+      if (item.good) {
+        newsEl.style.color = '#155724'; // verde oscuro
+      } else {
+        newsEl.style.color = '#721c24'; // rojo oscuro
+      }
+
+      newsContainer.appendChild(newsEl);
+    });
+
+    ticker.appendChild(newsContainer);
+  }
+
   function sortAndRender(key) {
-    // Desactivar botones y activar el seleccionado
     document.querySelectorAll('.sort-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.key === key);
     });
 
     let sorted = [...suppliers];
-    if(key === 'cost') {
-      sorted.sort((a,b) => a.cost - b.cost); // Ascendente menor costo mejor
-    } else if(key === 'sustainability') {
-      sorted.sort((a,b) => b.sustainability - a.sustainability); // Descendente mayor score
-    } else if(key === 'speed') {
-      sorted.sort((a,b) => a.speed - b.speed); // Ascendente menor días mejor
+    if (key === 'cost') {
+      sorted.sort((a,b) => a.cost - b.cost);
+    } else if (key === 'sustainability') {
+      sorted.sort((a,b) => b.sustainability - a.sustainability);
+    } else if (key === 'speed') {
+      sorted.sort((a,b) => a.speed - b.speed);
     }
     renderTableRows(sorted);
   }
@@ -447,7 +524,7 @@
     });
   });
 
-  // Render inicial
+  // Render inicial (orden por costo)
   sortAndRender('cost');
 
 </script>
