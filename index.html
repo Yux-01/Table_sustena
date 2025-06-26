@@ -18,32 +18,27 @@
       margin-bottom: 20px;
       color: #004085;
     }
-    /* Botones para rankear */
-    .sort-controls {
-      max-width: 900px;
-      margin: 0 auto 20px;
+    .ranking-buttons {
       text-align: center;
+      margin: 20px 0;
     }
-    .sort-btn {
+    .ranking-buttons button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 14px;
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 10px 18px;
-      margin: 0 8px;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.3s;
-      user-select: none;
     }
-    .sort-btn:hover, .sort-btn.active {
+    .ranking-buttons button:hover {
       background-color: #0056b3;
     }
-
     table {
       width: 100%;
       max-width: 900px;
-      margin: 20px auto 40px;
+      margin: 20px auto;
       border-collapse: collapse;
       background: white;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -60,100 +55,84 @@
       background: #007bff;
       color: white;
       font-weight: 600;
+      cursor: pointer;
     }
     td.supplier {
       color: #007bff;
       font-weight: 600;
       cursor: pointer;
-      transition: color 0.3s;
     }
     td.supplier:hover {
       color: #0056b3;
       text-decoration: underline;
     }
-    td .check {
-      color: #28a745;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-    td .cross {
-      color: #dc3545;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
     .details-container {
       max-width: 900px;
-      margin: 0 auto 60px;
+      margin: 30px auto;
       background: white;
       box-shadow: 0 6px 15px rgba(0,0,0,0.1);
       border-radius: 8px;
       padding: 25px 30px;
       display: none;
+      position: relative;
       animation: fadeIn 0.4s ease forwards;
     }
     .details-container.active {
       display: block;
     }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #aaa;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s;
+    }
+    .close-btn:hover {
+      color: #333;
+    }
     .charts {
       display: flex;
-      gap: 30px;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 20px;
       margin-bottom: 25px;
     }
+    .chart-row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      gap: 20px;
+    }
     .chart-box {
-      flex: 1 1 280px;
-      max-width: 280px;
+      flex: 1 1 48%;
       background: #f8f9fa;
       border-radius: 10px;
       padding: 15px;
       box-shadow: inset 0 0 8px rgba(0,123,255,0.1);
-      transition: box-shadow 0.3s ease;
     }
-    .chart-box:hover {
-      box-shadow: inset 0 0 15px rgba(0,123,255,0.4);
+    .chart-wide {
+      flex: 1 1 100%;
     }
     .chart-box h3 {
       text-align: center;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       color: #004085;
       font-weight: 700;
     }
-    .news {
-      max-width: 800px;
-      margin: 0 auto;
-      color: #333;
-    }
-    .news h3 {
-      color: #004085;
-      margin-bottom: 15px;
-    }
     .news ul {
-      list-style-type: disc;
-      padding-left: 20px;
-      line-height: 1.6;
-      max-height: 140px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 15px;
-      background: #fefefe;
+      list-style: none;
+      padding: 0;
     }
     .news li {
       margin-bottom: 10px;
+      font-weight: 500;
     }
-    .news li.good {
-      color: #155724;
-      background: #d4edda;
-      padding: 6px 10px;
-      border-radius: 5px;
-    }
-    .news li.bad {
-      color: #721c24;
-      background: #f8d7da;
-      padding: 6px 10px;
-      border-radius: 5px;
-    }
+    .news li.good { color: green; }
+    .news li.bad { color: red; }
     @keyframes fadeIn {
       from {opacity: 0; transform: translateY(10px);}
       to {opacity: 1; transform: translateY(0);}
@@ -162,317 +141,186 @@
 </head>
 <body>
 
-  <h1>Semiconductor Suppliers Dashboard</h1>
+<h1>Semiconductor Suppliers Dashboard</h1>
 
-  <div class="sort-controls">
-    <button class="sort-btn active" data-key="cost">Sort by Cost (Low to High)</button>
-    <button class="sort-btn" data-key="sustainability">Sort by Sustainability</button>
-    <button class="sort-btn" data-key="speed">Sort by Speed (Fast to Slow)</button>
-  </div>
+<div class="ranking-buttons">
+  <button onclick="sortTable(1)">Rank by Cost</button>
+  <button onclick="sortTable(3)">Rank by Speed</button>
+  <button onclick="sortTable(2)">Rank by Sustainability</button>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Supplier</th>
-        <th>Cost (USD)</th>
-        <th>Sustainability</th>
-        <th>Speed (Days)</th>
-      </tr>
-    </thead>
-    <tbody id="supplier-table-body">
-      <!-- Filas se crean dinámicamente -->
-    </tbody>
-  </table>
+<table id="supplier-table">
+  <thead>
+    <tr>
+      <th>Supplier</th>
+      <th>Cost (USD)</th>
+      <th>Sustainability</th>
+      <th>Speed (Days)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="supplier" data-id="A">Advanced Materials</td><td>2500</td><td>ISO 14001, ESG</td><td>7</td></tr>
+    <tr><td class="supplier" data-id="B">SilitroMic</td><td>1800</td><td>ISO 9001</td><td>10</td></tr>
+    <tr><td class="supplier" data-id="C">Micro-IP Inc</td><td>2200</td><td>None</td><td>5</td></tr>
+    <tr><td class="supplier" data-id="D">Numio Corporation</td><td>2000</td><td>ESG</td><td>12</td></tr>
+    <tr><td class="supplier" data-id="E">WorldWates</td><td>2700</td><td>ISO 14001, ISO 50001</td><td>8</td></tr>
+  </tbody>
+</table>
 
-  <div id="supplier-details" class="details-container" aria-live="polite" aria-atomic="true">
-    <h2 id="details-title">Supplier Details</h2>
-    <div class="charts">
-      <div class="chart-box">
-        <h3>Company Profile (Cost / Sustainability / Speed)</h3>
-        <canvas id="profileChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h3>Performance Scores</h3>
-        <canvas id="performanceChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h3>Speed Trend (Days to Deliver)</h3>
-        <canvas id="trendChart"></canvas>
-      </div>
+<div id="supplier-details" class="details-container">
+  <div class="close-btn" id="close-details">&times;</div>
+  <h2 id="details-title">Supplier Details</h2>
+  <div class="charts">
+    <div class="chart-row">
+      <div class="chart-box"><h3>Company Value Trend</h3><canvas id="profileChart"></canvas></div>
+      <div class="chart-box"><h3>Delivery Speed</h3><canvas id="trendChart"></canvas></div>
     </div>
-    <div class="news">
-      <h3>Recent News</h3>
-      <ul id="news-list"></ul>
-    </div>
+    <div class="chart-box chart-wide"><h3>Performance Breakdown</h3><canvas id="performanceChart"></canvas></div>
   </div>
+  <div class="news">
+    <h3>News</h3>
+    <ul id="news-list"></ul>
+  </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Datos con valores coherentes para cada proveedor + good/bad news flags
   const supplierData = {
     A: {
-      profile: {Cost: 2500, Sustainability: 70, Speed: 7},
-      performance: {Cost: 65, Sustainability: 85, Speed: 90},
-      trend: [8, 7, 7, 6, 7, 7],
+      value: [2000, 2100, 2300, 2500, 2400, 2600],
+      trend: [9, 8, 7, 6, 6, 7],
+      performance: { Cost: 60, Sustainability: 85, Speed: 90 },
       news: [
-        {text: "Advanced Materials certified with ISO 14001 and ESG standards.", good: true},
-        {text: "Advanced Materials shortens delivery time by 1 day.", good: true},
-        {text: "Advanced Materials launches new green manufacturing line.", good: true}
+        { text: "Certified with ISO 14001 and ESG standards.", type: "good" },
+        { text: "Reduced carbon footprint by 10%", type: "good" }
       ]
     },
     B: {
-      profile: {Cost: 1800, Sustainability: 60, Speed: 10},
-      performance: {Cost: 80, Sustainability: 70, Speed: 75},
-      trend: [11, 10, 10, 9, 10, 10],
+      value: [1600, 1700, 1750, 1800, 1780, 1800],
+      trend: [11, 10, 10, 9, 9, 10],
+      performance: { Cost: 75, Sustainability: 70, Speed: 75 },
       news: [
-        {text: "SilitroMic maintains ISO 9001 certification.", good: true},
-        {text: "SilitroMic expands production capacity.", good: true},
-        {text: "SilitroMic invests in faster logistics.", good: true}
+        { text: "Maintains ISO 9001 certification.", type: "good" },
+        { text: "Delayed shipping last quarter.", type: "bad" }
       ]
     },
     C: {
-      profile: {Cost: 2200, Sustainability: 20, Speed: 5},
-      performance: {Cost: 70, Sustainability: 25, Speed: 95},
-      trend: [6, 5, 5, 4, 5, 5],
+      value: [2100, 2150, 2200, 2180, 2220, 2200],
+      trend: [6, 6, 5, 4, 5, 5],
+      performance: { Cost: 70, Sustainability: 30, Speed: 95 },
       news: [
-        {text: "Micro-IP Inc focused on speed but lacks sustainability certifications.", good: false},
-        {text: "Micro-IP Inc improves delivery times significantly.", good: true},
-        {text: "Micro-IP Inc working on environmental compliance.", good: false}
+        { text: "Lacks sustainability certifications.", type: "bad" },
+        { text: "Fastest average delivery time.", type: "good" }
       ]
     },
     D: {
-      profile: {Cost: 2000, Sustainability: 50, Speed: 12},
-      performance: {Cost: 75, Sustainability: 65, Speed: 60},
+      value: [1900, 2000, 2000, 2050, 1980, 2000],
       trend: [13, 12, 12, 12, 11, 12],
+      performance: { Cost: 65, Sustainability: 65, Speed: 60 },
       news: [
-        {text: "Numio Corporation adopts ESG frameworks.", good: true},
-        {text: "Numio Corporation faces slight delivery delays.", good: false},
-        {text: "Numio Corporation optimizing production costs.", good: true}
+        { text: "Adopted ESG frameworks.", type: "good" },
+        { text: "Faced minor production delays.", type: "bad" }
       ]
     },
     E: {
-      profile: {Cost: 2700, Sustainability: 80, Speed: 8},
-      performance: {Cost: 60, Sustainability: 90, Speed: 85},
+      value: [2500, 2550, 2600, 2650, 2680, 2700],
       trend: [9, 8, 8, 7, 8, 8],
+      performance: { Cost: 55, Sustainability: 90, Speed: 85 },
       news: [
-        {text: "WorldWates certified with ISO 14001 and ISO 50001.", good: true},
-        {text: "WorldWates improves energy efficiency across plants.", good: true},
-        {text: "WorldWates shortens average delivery by 1 day.", good: true}
+        { text: "Certified ISO 14001 & 50001.", type: "good" },
+        { text: "Improved energy efficiency.", type: "good" }
       ]
     }
   };
 
-  const supplierNames = {
-    A: "Advanced Materials",
-    B: "SilitroMic",
-    C: "Micro-IP Inc",
-    D: "Numio Corporation",
-    E: "WorldWates"
-  };
-
-  // Estado actual
   let currentSupplier = null;
-  let currentSortKey = 'cost';
+  let profileChart, trendChart, performanceChart;
 
-  const detailsDiv = document.getElementById('supplier-details');
-  const detailsTitle = document.getElementById('details-title');
-  const newsList = document.getElementById('news-list');
-  const tableBody = document.getElementById('supplier-table-body');
-  const sortButtons = document.querySelectorAll('.sort-btn');
-
-  // Crear tablas
-  function renderTable() {
-    // Ordenar según currentSortKey
-    const sortedKeys = Object.keys(supplierData).sort((a,b) => {
-      if(currentSortKey === 'cost') {
-        return supplierData[a].profile.Cost - supplierData[b].profile.Cost;
-      } else if(currentSortKey === 'sustainability') {
-        // ordenar descendente para sustainability (más alto mejor)
-        return supplierData[b].profile.Sustainability - supplierData[a].profile.Sustainability;
-      } else if(currentSortKey === 'speed') {
-        // menor días es mejor, ascendente
-        return supplierData[a].profile.Speed - supplierData[b].profile.Speed;
-      }
-      return 0;
-    });
-
-    tableBody.innerHTML = '';
-    sortedKeys.forEach(id => {
-      const data = supplierData[id];
-      const row = document.createElement('tr');
-
-      const tdSupplier = document.createElement('td');
-      tdSupplier.classList.add('supplier');
-      tdSupplier.setAttribute('data-id', id);
-      tdSupplier.textContent = supplierNames[id];
-      row.appendChild(tdSupplier);
-
-      const tdCost = document.createElement('td');
-      tdCost.textContent = `$${data.profile.Cost}`;
-      row.appendChild(tdCost);
-
-      const tdSustain = document.createElement('td');
-      const spanSust = document.createElement('span');
-      if(data.profile.Sustainability > 40) {
-        spanSust.textContent = 'ISO & ESG';
-        spanSust.classList.add('check');
+  // Remover eventos mouseenter/mouseleave y usar click
+  document.querySelectorAll('.supplier').forEach(cell => {
+    cell.addEventListener('click', () => {
+      if (currentSupplier === cell.dataset.id) {
+        // Si mismo supplier clickeado, ocultar detalles
+        hideDetails();
       } else {
-        spanSust.textContent = 'None';
-        spanSust.classList.add('cross');
-      }
-      tdSustain.appendChild(spanSust);
-      row.appendChild(tdSustain);
-
-      const tdSpeed = document.createElement('td');
-      tdSpeed.textContent = data.profile.Speed;
-      row.appendChild(tdSpeed);
-
-      tableBody.appendChild(row);
-    });
-
-    // Re-agregar event listeners para click en suppliers
-    document.querySelectorAll('td.supplier').forEach(cell => {
-      cell.addEventListener('click', () => {
-        const id = cell.getAttribute('data-id');
-        toggleSupplierDetails(id);
-      });
-    });
-  }
-
-  // Crear gráficos
-  let profileChartInstance = null;
-  let performanceChartInstance = null;
-  let trendChartInstance = null;
-
-  function createProfileChart(data) {
-    const ctx = document.getElementById('profileChart').getContext('2d');
-    if(profileChartInstance) profileChartInstance.destroy();
-    profileChartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: Object.keys(data),
-        datasets: [{
-          data: Object.values(data),
-          backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-          hoverOffset: 30,
-          borderWidth: 1,
-          borderColor: '#ddd'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom', labels: { font: { size: 14 }} },
-          tooltip: { enabled: true }
-        }
+        showDetails(cell.dataset.id);
       }
     });
-  }
+  });
 
-  function createPerformanceChart(data) {
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    if(performanceChartInstance) performanceChartInstance.destroy();
-    performanceChartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: Object.keys(data),
-        datasets: [{
-          label: 'Performance Score',
-          data: Object.values(data),
-          backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-          borderRadius: 6,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true, max: 100 }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: true }
-        }
-      }
-    });
-  }
+  // Botón cerrar detalles
+  document.getElementById('close-details').addEventListener('click', () => {
+    hideDetails();
+  });
 
-  function createTrendChart(data) {
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    if(trendChartInstance) trendChartInstance.destroy();
-    trendChartInstance = new Chart(ctx, {
+  function showDetails(id) {
+    currentSupplier = id;
+    const data = supplierData[id];
+    document.getElementById('supplier-details').classList.add('active');
+    document.getElementById('details-title').innerText = `Supplier: ${cellName(id)}`;
+
+    const ctx1 = document.getElementById('profileChart').getContext('2d');
+    if (profileChart) profileChart.destroy();
+    profileChart = new Chart(ctx1, {
       type: 'line',
       data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-          label: 'Delivery Days',
-          data: data,
-          fill: false,
-          borderColor: '#17a2b8',
-          tension: 0.3,
-          pointBackgroundColor: '#17a2b8',
-          pointRadius: 5,
-          pointHoverRadius: 8,
-          borderWidth: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: { enabled: true }
-        },
-        scales: {
-          y: { beginAtZero: true, max: 20 }
-        }
+        datasets: [{ label: 'Company Value', data: data.value, borderColor: '#007bff', fill: false }]
       }
     });
-  }
 
-  // Render noticias con colores segun tipo (good/bad)
-  function renderNews(newsArray) {
+    const ctx2 = document.getElementById('trendChart').getContext('2d');
+    if (trendChart) trendChart.destroy();
+    trendChart = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{ label: 'Speed (days)', data: data.trend, backgroundColor: '#ffc107' }]
+      }
+    });
+
+    const ctx3 = document.getElementById('performanceChart').getContext('2d');
+    if (performanceChart) performanceChart.destroy();
+    performanceChart = new Chart(ctx3, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(data.performance),
+        datasets: [{ label: 'Score', data: Object.values(data.performance), backgroundColor: ['#007bff', '#28a745', '#17a2b8'] }]
+      },
+      options: { scales: { y: { max: 100, beginAtZero: true } } }
+    });
+
+    const newsList = document.getElementById('news-list');
     newsList.innerHTML = '';
-    newsArray.forEach(item => {
+    data.news.forEach(n => {
       const li = document.createElement('li');
-      li.textContent = item.text;
-      li.classList.add(item.good ? 'good' : 'bad');
+      li.className = n.type;
+      li.textContent = n.text;
       newsList.appendChild(li);
     });
   }
 
-  // Mostrar/ocultar detalles proveedor
-  function toggleSupplierDetails(supplierId) {
-    if(currentSupplier === supplierId) {
-      detailsDiv.classList.remove('active');
-      currentSupplier = null;
-    } else {
-      currentSupplier = supplierId;
-      detailsTitle.textContent = `Supplier: ${supplierNames[supplierId]} Details`;
-      const data = supplierData[supplierId];
-      createProfileChart(data.profile);
-      createPerformanceChart(data.performance);
-      createTrendChart(data.trend);
-      renderNews(data.news);
-      detailsDiv.classList.add('active');
-      detailsDiv.scrollIntoView({behavior: 'smooth'});
-    }
+  function hideDetails() {
+    document.getElementById('supplier-details').classList.remove('active');
+    currentSupplier = null;
   }
 
-  // Botones ordenar
-  sortButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      sortButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentSortKey = btn.getAttribute('data-key');
-      renderTable();
-      // Ocultar detalles al ordenar
-      detailsDiv.classList.remove('active');
-      currentSupplier = null;
+  function cellName(id) {
+    return document.querySelector(`td[data-id="${id}"]`).textContent;
+  }
+
+  function sortTable(col) {
+    const table = document.getElementById("supplier-table").tBodies[0];
+    const rows = Array.from(table.rows);
+    // alternar dirección de orden
+    const dir = sortTable.dir = -sortTable.dir || 1;
+    rows.sort((a, b) => {
+      const A = a.cells[col].textContent.replace(/[^0-9.]/g, '');
+      const B = b.cells[col].textContent.replace(/[^0-9.]/g, '');
+      return dir * (parseFloat(A) - parseFloat(B));
     });
-  });
-
-  // Render inicial
-  renderTable();
-
+    rows.forEach(row => table.appendChild(row));
+  }
 </script>
 
 </body>
