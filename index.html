@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Semiconductor Suppliers data table</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -25,14 +26,14 @@
       margin: 0 10px;
       padding: 10px 20px;
       font-size: 14px;
-      background-color: #007bff;
+      background-color: #287925;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
     .ranking-buttons button:hover {
-      background-color: #0056b3;
+      background-color: #1f5f1d;
     }
     table {
       width: 100%;
@@ -43,6 +44,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       border-radius: 8px;
       overflow: hidden;
+      border: 1px solid #c9d1c9;
     }
     th, td {
       padding: 14px 20px;
@@ -51,18 +53,18 @@
       user-select: none;
     }
     th {
-      background: #007bff;
+      background: #287925;
       color: white;
       font-weight: 600;
       cursor: pointer;
     }
     td.supplier {
-      color: #007bff;
+      color: #287925;
       font-weight: 600;
       cursor: pointer;
     }
     td.supplier:hover {
-      color: #0056b3;
+      color: #1f5f1d;
       text-decoration: underline;
     }
     .details-container {
@@ -75,6 +77,7 @@
       display: none;
       position: relative;
       animation: fadeIn 0.4s ease forwards;
+      border: 1px solid #c9d1c9;
     }
     .details-container.active {
       display: block;
@@ -140,7 +143,7 @@
 </head>
 <body>
 
-<h1>Semiconductor Suppliers Dashboard</h1>
+<h1>Semiconductor Suppliers data table</h1>
 
 <div class="ranking-buttons">
   <button onclick="sortTable(1)">Rank by Cost</button>
@@ -182,7 +185,6 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const supplierData = {
     A: {
@@ -235,11 +237,9 @@
   let currentSupplier = null;
   let profileChart, trendChart, performanceChart;
 
-  // Remover eventos mouseenter/mouseleave y usar click
   document.querySelectorAll('.supplier').forEach(cell => {
     cell.addEventListener('click', () => {
       if (currentSupplier === cell.dataset.id) {
-        // Si mismo supplier clickeado, ocultar detalles
         hideDetails();
       } else {
         showDetails(cell.dataset.id);
@@ -247,7 +247,6 @@
     });
   });
 
-  // Botón cerrar detalles
   document.getElementById('close-details').addEventListener('click', () => {
     hideDetails();
   });
@@ -311,7 +310,6 @@
   function sortTable(col) {
     const table = document.getElementById("supplier-table").tBodies[0];
     const rows = Array.from(table.rows);
-    // alternar dirección de orden
     const dir = sortTable.dir = -sortTable.dir || 1;
     rows.sort((a, b) => {
       const A = a.cells[col].textContent.replace(/[^0-9.]/g, '');
